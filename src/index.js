@@ -3,7 +3,11 @@ async function getProfile() {
     method: 'snap_manageState',
     params: ['get'],
   });
-  return state.profile;
+  if (state && state.profile) {
+    return state.profile;
+  } else {
+    return {};
+  }
 }
 
 module.exports.onRpcRequest = async ({ request }) => {
