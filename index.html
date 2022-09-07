@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Hello, Snaps!</title>
+    <link rel="icon" type="image/svg" href="./images/icon.svg" />
+  </head>
+
+  <body>
+    <h1>Hello, Snaps!</h1>
+    <p>This is an example Snap to store users personal data. <br>
+      Example usecase:  E-commerce quick checkout feature</p>
+    <details>
+      <summary>Instructions</summary>
+      <ul>
+        <li>First, click "Connect". Then Fill out the form to create your profile. Clearing out your profile will delete it indefinitely.</li>
+        <li>Please note that:</li>
+        <ul>
+          <li>
+            The <code>snap.manifest.json</code> and
+            <code>package.json</code> must be located in the server root
+            directory..
+          </li>
+          <li>
+            The Snap bundle must be hosted at the location specified by the
+            <code>location</code> field of <code>snap.manifest.json</code>.
+          </li>
+        </ul>
+      </ul>
+    </details>
+    <br />
+    <button class="connect">Connect</button>
+
+    <form style="margin: 10px 0">
+      <p class="form-row">
+        <label for="firstName">First Name</label>
+        <input type="text" name="firstName" id="firstName" />
+      </p>
+      <p class="form-row">
+        <label for="lastName">Last Name</label>
+        <input type="text" name="lastName" id="lastName" />
+      </p>
+      <p class="form-row">
+        <label for="email">Email</label>
+        <input type="email" name="email" id="email" />
+      </p>
+      <p class="form-row">
+        <label for="phone">Phone</label>
+        <input type="phone" name="phone" id="phone" />
+      </p>
+      <p class="form-row">
+        <label for="address">Address</label>
+        <input type="address" name="address" id="address" />
+      </p>
+      <p class="form-row">
+        <label for="city">City</label>
+        <input type="city" name="city" id="city" />
+      </p>
+      <p class="form-row">
+        <label for="postalCode">Postal Code</label>
+        <input type="postalCode" name="postalCode" id="postalCode" />
+      </p>
+      <p class="form-row">
+        <label for="state">State</label>
+        <input type="state" name="state" id="state" />
+      </p>
+      <p class="form-row">
+        <label for="country">Country</label>
+        <input type="country" name="country" id="country" />
+      </p>
+
+      <button class="updateProfile">Update Profile</button>
+    </form>
+    <button class="clearProfile">Clear Profile</button>
+  </body>
+  <style>
+    .form-row {
+      display: flex;
+      flex-direction: column;
+      max-width: 300px;
+    }
+  </style>
+
+  <script>
+    const snapId = `local:${window.location.href}`;
+
+    const connectButton = document.querySelector('button.connect');
+    const sendButton = document.querySelector('button.updateProfile');
+    const clearButton = document.querySelector('button.clearProfile');
+
+    connectButton.addEventListener('click', connect);
+    sendButton.addEventListener('click', update);
+    clearButton.addEventListener('click', clear);
+
+    //Set input values
+    function setInputs(profile) {
+      document.getElementById('firstName').value = profile.firstName
+        ? profile.firstName
+        : '';
+      document.getElementById('lastName').value = profile.lastName
+        ? profile.lastName
+        : '';
+      document.getElementById('email').value = profile.email
+        ? profile.email
+        : '';
+      document.getElementById('phone').value = profile.phone
+        ? profile.phone
+        : '';
+      document.getElementById('address').value = profile.address
+        ? profile.address
+        : '';
+      document.getElementById('city').value = profile.city ? profile.city : '';
+      document.getElementById('state').value = profile.state
+        ? profile.state
+        : '';
+      document.getElementById('postalCode').value = profile.postalCode
+        ? profile.postalCode
+        : '';
+      document.getElementById('country').value = profile.country
+        ? profile.country
+        : '';
+    }
+
+    function getInputValues() {
+      const profile = {
+        firstName: document.getElementById('firstName').value,
+        lastName: document.getElementById('lastName').value,
+        email: document.getElementById('email').value,
+        phone: document.getElementById('phone').value,
+        address: document.getElementById('address').value,
+        city: document.getElementById('city').value,
+        state: document.getElementById('state').value,
+        postalCode: document.getElementById('postalCode').value,
+        country: document.getElementById('country').value,
+      };
+
+      return profile;
+    }
+
+    // here we get permissions to interact with and install the snap
+    async function connect() {
+      try {
+        await ethereum
+          .request({
+            method: 'wallet_enable',
+            params: [
+              {
+                wallet_snap: { [snapId]: {} },
+              },
+            ],
+          })
+          .then(async () => {
+            //Get profile info upon connection and set inputs
+            setInputs(await getProfile());
+          });
+      } catch (err) {
+        alert('Problem happened: ' + err.message || err);
+      }
+    }
+
+    async function getProfile() {
+      try {
+        const response = await ethereum.request({
+          method: 'wallet_invokeSnap',
+          params: [snapId, { method: 'getUserProfile', params: {} }],
+        });
+        return response;
+      } catch (err) {
+        alert('Problem happened: ' + err.message || err);
+      }
+    }
+
+    async function update(e) {
+      e.preventDefault();
+      //Confirm with user before actually updating the profile
+      const confirmResult = await confirmProfileEdit({
+        prompt: 'Confirm profile details',
+        description: 'Are you sure you want to update your profile?',
+        textAreaContent: '',
+      });
+      if (confirmResult) {
+        try {
+          const params = getInputValues();
+          await ethereum.request({
+            method: 'wallet_invokeSnap',
+            params: [snapId, { method: 'updateProfile', params }],
+          });
+        } catch (err) {
+          alert('Problem happened: ' + err.message || err);
+        }
+      }
+    }
+    //Clear userProfile
+    async function clear() {
+      const confirmResult = await confirmProfileEdit({
+        prompt: 'Confirm profile deletion',
+        description: 'Are you sure you want to delete your profile?',
+        textAreaContent: '',
+      });
+      if (confirmResult) {
+        try {
+          const response = await ethereum.request({
+            method: 'wallet_invokeSnap',
+            params: [snapId, { method: 'clearUserProfile', params: {} }],
+          });
+          setInputs(await getProfile());
+
+          return response;
+        } catch (err) {
+          alert('Problem happened: ' + err.message || err);
+        }
+      }
+    }
+
+    //Display inApp confirmation dialog
+    async function confirmProfileEdit(params) {
+      try {
+        const response = await ethereum.request({
+          method: 'wallet_invokeSnap',
+          params: [
+            snapId,
+            {
+              method: 'confirm',
+              params,
+            },
+          ],
+        });
+        return response;
+      } catch (err) {
+        alert('Problem happened: ' + err.message || err);
+        return false;
+      }
+    }
+  </script>
+</html>

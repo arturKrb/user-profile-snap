@@ -1,0 +1,25 @@
+{
+  "version": "0.1.0",
+  "description": "Example Snap to store your personal data.",
+  "proposedName": "MetaMask User Profile Snap",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/MetaMask/snap-template.git"
+  },
+  "source": {
+    "shasum": "EefUKUlIHaHHTg5RRogcomrg+H3kELMtmUsbFgA1kCs=",
+    "location": {
+      "npm": {
+        "filePath": "dist/bundle.js",
+        "iconPath": "images/icon.svg",
+        "packageName": "@metamask/template-snap",
+        "registry": "https://registry.npmjs.org/"
+      }
+    }
+  },
+  "initialPermissions": {
+    "snap_confirm": {},
+    "snap_manageState": {}
+  },
+  "manifestVersion": "0.1"
+}
