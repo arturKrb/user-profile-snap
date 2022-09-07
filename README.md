@@ -10,6 +10,11 @@ Example usecase: E-commerce quick checkout feature
 yarn install
 ```
 
+```shell
+yarn serve
+```
+Open [https://localhost:8080](https://localhost:8080) from your browser
+
 ### Testing and Linting
 
 This example Snap has no included tests
