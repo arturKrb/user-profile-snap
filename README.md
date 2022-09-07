@@ -1,6 +1,6 @@
 ## Description
 
-This is an example Snap to store your personal data. Forked from [@metamask/template-snap(https://github.com/MetaMask/template-snap).
+This is an example Snap to store your personal data. Forked from [@metamask/template-snap](https://github.com/MetaMask/template-snap).
 For more detailed instructions, see [the MetaMask documentation](https://docs.metamask.io/guide/snaps.html#serving-a-snap-to-your-local-environment).
 Example usecase: E-commerce quick checkout feature
 
